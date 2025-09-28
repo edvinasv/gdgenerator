@@ -28,7 +28,7 @@ func generateDashboard(ddata DashboardData) *dashboard.DashboardBuilder {
 		Refresh(ddata.Refresh)
 
 	if len(ddata.Banner) > 0 {
-		GenerateBanner(builder, ddata.Banner, marginPos)
+		generateBanner(builder, ddata.Banner, marginPos)
 	}
 
 	if ddata.DryRun {
@@ -45,12 +45,12 @@ func generateDashboard(ddata DashboardData) *dashboard.DashboardBuilder {
 		if ddata.Disabled {
 			row.Disabled = true
 		}
-		GenerateRow(builder, row, marginPos)
+		generateRow(builder, row, marginPos)
 	}
 	return builder
 }
 
-func GenerateBanner(builder *dashboard.DashboardBuilder, banner string, marginPos *dashboard.GridPos) {
+func generateBanner(builder *dashboard.DashboardBuilder, banner string, marginPos *dashboard.GridPos) {
 	gridPos := dashboard.NewGridPos()
 	gridPos.H = 2
 	gridPos.W = 24
@@ -68,7 +68,7 @@ func GenerateBanner(builder *dashboard.DashboardBuilder, banner string, marginPo
 
 }
 
-func GenerateRow(
+func generateRow(
 	builder *dashboard.DashboardBuilder,
 	row DataRow,
 	marginPos *dashboard.GridPos) {
@@ -83,7 +83,7 @@ func GenerateRow(
 	colMarginPos.X = colRefPos.X
 
 	builder.WithRow(
-                dashboard.NewRowBuilder(row.Title).GridPos(*marginPos))
+		dashboard.NewRowBuilder(row.Title).GridPos(*marginPos))
 
 	for _, column := range row.Columns {
 		if len(column.DatasourceUid) == 0 {
@@ -95,7 +95,7 @@ func GenerateRow(
 		if row.Disabled {
 			column.Disabled = true
 		}
-		GenerateRowColumn(builder, column, colRefPos, colMarginPos)
+		generateRowColumn(builder, column, colRefPos, colMarginPos)
 		colRefPos.X = colMarginPos.X
 		marginPos.Y = max(marginPos.Y, colMarginPos.Y)
 		marginPos.X = colMarginPos.X
@@ -103,7 +103,7 @@ func GenerateRow(
 	}
 }
 
-func GenerateRowColumn(
+func generateRowColumn(
 	builder *dashboard.DashboardBuilder,
 	column DataRowColumn,
 	colRefPos *dashboard.GridPos,
@@ -113,8 +113,6 @@ func GenerateRowColumn(
 
 	groupRefPos.Y = colRefPos.Y
 	groupRefPos.X = colRefPos.X
-	//builder.WithRow(
-	//        dashboard.NewRowBuilder(column.Title).GridPos(*colMarginPos))
 
 	for _, group := range column.Groups {
 		if len(group.DatasourceUid) == 0 {
@@ -126,12 +124,12 @@ func GenerateRowColumn(
 		if column.Disabled {
 			group.Disabled = true
 		}
-		GenerateRowColumnGroup(builder, group, groupRefPos, colMarginPos)
+		generateRowColumnGroup(builder, group, groupRefPos, colMarginPos)
 		groupRefPos.Y = colMarginPos.Y
 	}
 }
 
-func GenerateRowColumnGroup(
+func generateRowColumnGroup(
 	builder *dashboard.DashboardBuilder,
 	group DataRowColumnGroup,
 	groupRefPos *dashboard.GridPos,
@@ -156,16 +154,16 @@ func GenerateRowColumnGroup(
 		gridPos.X = groupRefPos.X + (uint32(index))%(group.Columns)*group.Width
 		switch panel.Type {
 		case "stat":
-			renderItemStatPanel(builder, panel, gridPos)
+			generateItemStatPanel(builder, panel, gridPos)
 		case "timeseries":
-			renderItemTimeseriesPanel(builder, panel, gridPos)
+			generateItemTimeseriesPanel(builder, panel, gridPos)
 		}
 	}
 	colMarginPos.Y = max(colMarginPos.Y, groupRefPos.Y+uint32(len(group.Items)+1)/group.Columns*group.Height)
 	colMarginPos.X = max(colMarginPos.X, groupRefPos.X+min(group.Columns, uint32(len(group.Items)))*group.Width+group.Spacing)
 }
 
-func renderItemStatPanel(
+func generateItemStatPanel(
 	builder *dashboard.DashboardBuilder,
 	item DataRowColumnGroupItem,
 	gridPos *dashboard.GridPos) {
@@ -262,7 +260,7 @@ func renderItemStatPanel(
 	builder.WithPanel(panel)
 }
 
-func renderItemTimeseriesPanel(
+func generateItemTimeseriesPanel(
 	builder *dashboard.DashboardBuilder,
 	item DataRowColumnGroupItem,
 	gridPos *dashboard.GridPos) {

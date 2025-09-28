@@ -7,6 +7,7 @@ timeRange:
 refresh: "30s"
 datasourceUid: "feuwckb41cglca" # prometheus type DS
 type: "stat"
+service: "service1"
 banner: >
   <div style='display: flex; height: 100%; background-color: grey;
       justify-items: center; align-items: center; '>
@@ -25,11 +26,13 @@ rows:
     #datasourceUid: "feuwckb41cglca"
     #type: "stat"
     #disabled: true
+    service: "service2"
     columns:
       - title: "Column11"
         datasourceUid: "feuwckb41cglca"
         #type: "stat"
         #disabled: true
+        service: "service3"
         groups:
           - title: "Group111"
             width: 2
@@ -39,6 +42,7 @@ rows:
             #datasourceUid: "feuwckb41cglca"
             #disabled: true
             type: "stat"
+            service: "service4"
             items:
               - title: "Item1111"
                 description: ["Item1", "Support:", *8x5_1h1d, "Contact:", *contact1, *contact2]
@@ -47,6 +51,7 @@ rows:
                 #datasourceUid: "feuwckb41cglca"
                 #disabled: true
                 #type: "stat"
+                service: "service5"
               - title: "Item1112"
                 description: ["Item2", "Support:", *8x5_1h1d, "Contact:", *contact1, *contact2]
                 expr: 'vector(-1)'
