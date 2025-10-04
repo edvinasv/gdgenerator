@@ -5,7 +5,7 @@ func generateAlerts(ddata DashboardData) *AlertGroups {
 	alertGroups := new(AlertGroups)
 	alertGroup := new(AlertGroup)
 
-	if ddata.DryRun {
+	if ddata.DryRun || ddata.Disabled {
 		return alertGroups
 	}
 
@@ -14,11 +14,11 @@ func generateAlerts(ddata DashboardData) *AlertGroups {
 	alertGroup.Interval = "1m"
 
 	for _, row := range ddata.Rows {
+		if row.Disabled {
+			continue
+		}
 		if len(row.Service) == 0 {
 			row.Service = ddata.Service
-		}
-		if ddata.Disabled {
-			row.Disabled = true
 		}
 		readRow(alertGroup, row)
 	}
@@ -31,11 +31,11 @@ func readRow(
 	row DataRow) {
 
 	for _, column := range row.Columns {
+		if column.Disabled {
+			continue
+		}
 		if len(column.Service) == 0 {
 			column.Service = row.Service
-		}
-		if row.Disabled {
-			column.Disabled = true
 		}
 		readRowColumn(alertGroup, column)
 	}
@@ -46,11 +46,11 @@ func readRowColumn(
 	column DataRowColumn) {
 
 	for _, group := range column.Groups {
+		if group.Disabled {
+			continue
+		}
 		if len(group.Service) == 0 {
 			group.Service = column.Service
-		}
-		if column.Disabled {
-			group.Disabled = true
 		}
 		readRowColumnGroup(alertGroup, group)
 	}
@@ -61,8 +61,8 @@ func readRowColumnGroup(
 	group DataRowColumnGroup) {
 
 	for _, panel := range group.Items {
-		if group.Disabled {
-			panel.Disabled = true
+		if panel.Disabled {
+			continue
 		}
 		if len(panel.Service) == 0 {
 			panel.Service = group.Service
