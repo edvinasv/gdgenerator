@@ -76,7 +76,7 @@ func generateAlert(
 	panel DataRowColumnGroupItem) {
 
 	alertGroup.Rules = append(alertGroup.Rules, AlertRule{
-		Alert: panel.Title + " critical",
+		Alert: panel.Title,
 		Expr:  "(" + panel.Expr + ") == 0",
 		//ForDuration: "0m",
 		//KeepFiringForDuration: "0m",
@@ -88,7 +88,7 @@ func generateAlert(
 	})
 
 	alertGroup.Rules = append(alertGroup.Rules, AlertRule{
-		Alert: panel.Title + " warning",
+		Alert: panel.Title,
 		Expr:  "(" + panel.Expr + ") > 0 and (" + panel.Expr + ") < 1",
 		//ForDuration: "0m",
 		//KeepFiringForDuration: "0m",
@@ -96,6 +96,6 @@ func generateAlert(
 			Severity: "warning",
 			Service:  panel.Service},
 		Annotations: AlertAnnotations{
-			Summary: panel.Title + " became critical"},
+			Summary: panel.Title + " became warning"},
 	})
 }
