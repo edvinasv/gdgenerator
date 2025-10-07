@@ -18,6 +18,7 @@ banner: >
 
 dryRun: false
 #disabled: true
+#alertingDisabled: true
 supportLowUrgency: &8x5_1h1d "8x5, Reaction: 1h, Repair: 1d"
 supportHighUrgency: &24x7_15m1h "24x7, Reaction: 15min, Repair: 4h"
 Contact1: &contact1 "User1"
@@ -27,6 +28,7 @@ rows:
     #datasourceUid: "feuwckb41cglca"
     #type: "stat"
     #disabled: true
+    alertingDisabled: true
     service: "service2"
     columns:
       - title: "Column11"
@@ -197,6 +199,7 @@ rows:
   - title: "Row2"
     columns:
       - title: "Column21"
+        alertingDisabled: true
         groups:
           - title: "Group211"
             width: 2
@@ -257,7 +260,7 @@ rows:
               - title: "Item2135"
                 description: ["Item2", "Support:", *8x5_1h1d, "Contact:", *contact1, *contact2]
                 expr: 'vector(1)'
-      - title: "Column12"
+      - title: "Column22"
         groups:
           - title: "Group221"
             width: 2
@@ -286,6 +289,7 @@ rows:
                 disabled: true
                 type: "timeseries"
           - title: "Group223"
+            alertingDisabled: true
             width: 2
             height: 1
             spacing: 0
@@ -340,6 +344,7 @@ rows:
                 expr: 'avg(probe_success{instance="localhost"}) or vector(-1)'
                 link: "https://grafana"
               - title: "Item2319"
+                #alertingDisabled: true
                 description: ["Item1", "Support:", *8x5_1h1d, "Contact:", *contact1, *contact2]
                 expr: 'avg(probe_success{instance="localhost"}) or vector(-1)'
                 link: "https://grafana"
