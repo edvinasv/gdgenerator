@@ -6,8 +6,6 @@ timeRange:
   to: "now"
 refresh: "30s"
 datasourceUid: "feuwckb41cglca" # prometheus type DS
-type: "stat"
-service: "service1"
 banner: >
   <div style='display: flex; height: 100%; background-color: grey;
       justify-items: center; align-items: center; '>
@@ -16,9 +14,24 @@ banner: >
     </h2>
   </div>
 
-dryRun: false
-#disabled: true
-#alertingDisabled: true
+#type: "timeseries"     # default "stat"
+#dryRun: true           # default false
+#disabled: true         # default false
+#alertingDisabled: true # default false
+
+range1Low: 200          # default unset
+range1High: 299         # default 0.0
+range1Color: "green"    # default "red"
+
+range2Low:  100         # default 0.0
+range2High: 399         # default 1.0
+range2Color: "blue"     # default "yellow"
+
+range3Low:  400         # default 1.0
+range3High: 599         # default unset
+range3Color: "red"    # default "green"
+
+service: "service1"
 supportLowUrgency: &8x5_1h1d "8x5, Reaction: 1h, Repair: 1d"
 supportHighUrgency: &24x7_15m1h "24x7, Reaction: 15min, Repair: 4h"
 Contact1: &contact1 "User1"

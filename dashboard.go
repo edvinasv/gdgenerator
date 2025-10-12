@@ -184,28 +184,38 @@ func generateItemStatPanel(
 		Index: cog.ToPtr(int32(2)),
 	}
 
-	rangeMapOption1 := dashboard.DashboardRangeMapOptions{
+	rangeMapOptionNorm := dashboard.DashboardRangeMapOptions{
+		From:   cog.ToPtr(float64(1)),
+		Result: vmResultGreen,
+	}
+	rangeMapOptionWarn := dashboard.DashboardRangeMapOptions{
 		From:   cog.ToPtr(float64(0)),
 		To:     cog.ToPtr(float64(1)),
 		Result: vmResultYellow,
 	}
-	valueMap1 := dashboard.ValueMap{
+	valueMapCrit := dashboard.ValueMap{
 		Type: "value",
 		Options: map[string]dashboard.ValueMappingResult{
-			"1": vmResultGreen,
 			"0": vmResultRed,
 		},
 	}
-	rangeMap1 := dashboard.RangeMap{
+	rangeMapNorm := dashboard.RangeMap{
 		Type:    "range",
-		Options: rangeMapOption1,
+		Options: rangeMapOptionNorm,
+	}
+	rangeMapWarn := dashboard.RangeMap{
+		Type:    "range",
+		Options: rangeMapOptionWarn,
 	}
 
-	vMappingValues := dashboard.ValueMapping{
-		ValueMap: &valueMap1,
+	vMappingRangeNorm := dashboard.ValueMapping{
+		RangeMap: &rangeMapNorm,
 	}
-	vMappingRange := dashboard.ValueMapping{
-		RangeMap: &rangeMap1,
+	vMappingRangeWarn := dashboard.ValueMapping{
+		RangeMap: &rangeMapWarn,
+	}
+	vMappingValuesCrit := dashboard.ValueMapping{
+		ValueMap: &valueMapCrit,
 	}
 
 	panel := stat.NewPanelBuilder()
@@ -219,7 +229,11 @@ func generateItemStatPanel(
 		item.Link = ""
 
 	} else {
-		panel = panel.Mappings([]dashboard.ValueMapping{vMappingValues, vMappingRange})
+		panel = panel.Mappings([]dashboard.ValueMapping{
+			vMappingRangeNorm,
+			vMappingRangeWarn,
+			vMappingValuesCrit,
+		})
 	}
 
 	panel = panel.ColorScheme(dashboard.NewFieldColorBuilder().
@@ -247,8 +261,8 @@ func generateItemStatPanel(
 		TextMode("name").
 		ColorMode("background_solid").
 		GraphMode("none").
-		Min(item.Min).
-		Max(item.Max).
+		//Min(item.Min).
+		//Max(item.Max).
 		Datasource(
 			dashboard.DataSourceRef{
 				Type: cog.ToPtr("prometheus"),
@@ -291,8 +305,8 @@ func generateItemTimeseriesPanel(
 				Format(prometheus.PromQueryFormatTimeSeries).
 				LegendFormat(item.Title),
 		).
-		Min(item.Min).
-		Max(item.Max).
+		//Min(item.Min).
+		//Max(item.Max).
 		Datasource(
 			dashboard.DataSourceRef{
 				Type: cog.ToPtr("prometheus"),

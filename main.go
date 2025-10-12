@@ -16,13 +16,25 @@ type DashboardDataTimeRange struct {
 	To   string `yaml:"to"`
 }
 
+type Range struct {
+	Min      float64 `yaml:"min"`
+	Max      float64 `yaml:"max"`
+	Color    string  `yaml:"color"`
+	Severity string  `yaml:"severity"`
+}
+
+type ItemSettings struct {
+	Type             string  `yaml:"type"`
+	Disabled         bool    `yaml:"disabled"`
+	AlertingDisabled bool    `yaml:"alertingDisabled"`
+	Ranges           []Range `yaml:"ranges"`
+}
+
 type DataRowColumnGroupItem struct {
 	Title            string   `yaml:"title"`
 	Descr            []string `yaml:"description"`
 	Expr             string   `yaml:"expr"`
 	Link             string   `yaml:"link"`
-	Min              float64  `yaml:"min"`
-	Max              float64  `yaml:"max"`
 	DatasourceUid    string   `yaml:"datasourceUid"`
 	Type             string   `yaml:"type"`
 	Service          string   `yaml:"service"`
@@ -34,8 +46,6 @@ type DataRowColumnGroup struct {
 	Title            string                   `yaml:"title"`
 	Width            uint32                   `yaml:"width"`
 	Height           uint32                   `yaml:"height"`
-	Min              float64                  `yaml:"min"`
-	Max              float64                  `yaml:"max"`
 	Spacing          uint32                   `yaml:"spacing"`
 	Columns          uint32                   `yaml:"columns"`
 	DatasourceUid    string                   `yaml:"datasourceUid"`
@@ -166,6 +176,11 @@ func (c *DashboardData) getConf(configFile string) *DashboardData {
 
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
+	}
+
+//setting defaults
+	if len(c.Type) == 0 {
+		c.Type = "stat"
 	}
 
 	return c
