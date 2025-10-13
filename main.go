@@ -23,73 +23,67 @@ type Range struct {
 	Severity string  `yaml:"severity"`
 }
 
+type GroupSettings struct {
+	Columns uint32 `yaml:"columns"`
+	Spacing uint32 `yaml:"spacing"`
+}
+
 type ItemSettings struct {
+	AlertingDisabled bool    `yaml:"alertingDisabled"`
 	Type             string  `yaml:"type"`
 	Disabled         bool    `yaml:"disabled"`
-	AlertingDisabled bool    `yaml:"alertingDisabled"`
+	Service          string  `yaml:"service"`
+	DatasourceUid    string  `yaml:"datasourceUid"`
 	Ranges           []Range `yaml:"ranges"`
+	Width            uint32  `yaml:"width"`            
+	Height           uint32  `yaml:"height"`
 }
 
 type DataRowColumnGroupItem struct {
-	Title            string   `yaml:"title"`
-	Descr            []string `yaml:"description"`
-	Expr             string   `yaml:"expr"`
-	Link             string   `yaml:"link"`
-	DatasourceUid    string   `yaml:"datasourceUid"`
-	Type             string   `yaml:"type"`
-	Service          string   `yaml:"service"`
-	Disabled         bool     `yaml:"disabled"`
-	AlertingDisabled bool     `yaml:"alertingDisabled"`
+	Title          string   `yaml:"title"`
+	Descr          []string `yaml:"description"`
+	Expr           string   `yaml:"expr"`
+	Link           string   `yaml:"link"`
+	Type           string   `yaml:"type"`
+	Disabled       bool     `yaml:"disabled"`
+	Service        string   `yaml:"service"`
+	DatasourceUid  string   `yaml:"datasourceUid"`
+	Ranges         []Range  `yaml:"ranges"`
 }
 
 type DataRowColumnGroup struct {
 	Title            string                   `yaml:"title"`
-	Width            uint32                   `yaml:"width"`
-	Height           uint32                   `yaml:"height"`
-	Spacing          uint32                   `yaml:"spacing"`
-	Columns          uint32                   `yaml:"columns"`
-	DatasourceUid    string                   `yaml:"datasourceUid"`
-	Type             string                   `yaml:"type"`
-	Service          string                   `yaml:"service"`
-	Disabled         bool                     `yaml:"disabled"`
 	Items            []DataRowColumnGroupItem `yaml:"items"`
-	AlertingDisabled bool                     `yaml:"alertingDisabled"`
+	ItemSettings     ItemSettings             `yaml:"itemSettings"`
+	Settings         GroupSettings            `yaml:"settings"`
 }
 
 type DataRowColumn struct {
 	Title            string               `yaml:"title"`
-	DatasourceUid    string               `yaml:"datasourceUid"`
-	Type             string               `yaml:"type"`
-	Service          string               `yaml:"service"`
-	Disabled         bool                 `yaml:"disabled"`
 	Groups           []DataRowColumnGroup `yaml:"groups"`
-	AlertingDisabled bool                 `yaml:"alertingDisabled"`
+	ItemSettings     ItemSettings         `yaml:"itemSettings"`
+	GroupSettings    GroupSettings        `yaml:"groupSettings"`
 }
 
 type DataRow struct {
 	Title            string          `yaml:"title"`
 	Columns          []DataRowColumn `yaml:"columns"`
-	DatasourceUid    string          `yaml:"datasourceUid"`
-	Type             string          `yaml:"type"`
-	Service          string          `yaml:"service"`
-	Disabled         bool            `yaml:"disabled"`
-	AlertingDisabled bool            `yaml:"alertingDisabled"`
+	ItemSettings     ItemSettings    `yaml:"itemSettings"`
+	GroupSettings    GroupSettings   `yaml:"groupSettings"`
+
 }
 
 type DashboardData struct {
-	Name             string                 `yaml:"title"`
-	Uid              string                 `yaml:"uid"`
-	FolderUid        string                 `yaml:"folderUid"`
-	TimeRange        DashboardDataTimeRange `yaml:"timeRange"`
-	Refresh          string                 `yaml:"refresh"`
-	DatasourceUid    string                 `yaml:"datasourceUid"`
-	Type             string                 `yaml:"type"`
-	Service          string                 `yaml:"service"`
-	Disabled         bool                   `yaml:"disabled"`
-	AlertingDisabled bool                   `yaml:"alertingDisabled"`
-	Banner           string                 `yaml:"banner"`
-	DryRun           bool                   `yaml:"dryRun"`
-	Rows             []DataRow              `yaml:"rows"`
+	Name                 string                 `yaml:"title"`
+	Uid                  string                 `yaml:"uid"`
+	FolderUid            string                 `yaml:"folderUid"`
+	TimeRange            DashboardDataTimeRange `yaml:"timeRange"`
+	Refresh              string                 `yaml:"refresh"`
+	DefaultItemSettings  ItemSettings           `yaml:"defaultItemSettings"`
+	DefaultGroupSettings GroupSettings          `yaml:"defaultGroupSettings"`        
+	Banner               string                 `yaml:"banner"`
+	DryRun               bool                   `yaml:"dryRun"`
+	Rows                 []DataRow              `yaml:"rows"`
 }
 
 type AlertLabels struct {
@@ -178,9 +172,44 @@ func (c *DashboardData) getConf(configFile string) *DashboardData {
 		log.Fatalf("Unmarshal: %v", err)
 	}
 
-//setting defaults
-	if len(c.Type) == 0 {
-		c.Type = "stat"
+	c.loadDefaults()
+
+	return c
+}
+
+func (c *DashboardData) loadDefaults() *DashboardData {
+	if len(c.DefaultItemSettings.Type) == 0 {
+		c.DefaultItemSettings.Type = "stat"
+	}
+	if !(c.DefaultItemSettings.Width > 0) {
+		c.DefaultItemSettings.Width = 2
+	}
+	if !(c.DefaultItemSettings.Height > 0) {
+		c.DefaultItemSettings.Height = 1
+	}
+	if len(c.DefaultItemSettings.Ranges) == 0 {
+		c.DefaultItemSettings.Ranges = []Range{{
+			Min: 1,
+			Max: 1,
+			Color: "green",
+			},{
+			Min: 0,
+			Max: 0,
+			Color: "red",
+			Severity: "critical",
+			},{
+			Min: 0,
+			Max: 1,
+			Color: "yellow",
+			Severity: "warning",
+			},
+		}
+	}
+	if !(c.DefaultGroupSettings.Columns > 0) {
+		c.DefaultGroupSettings.Columns = 1
+	}
+	if !(c.DefaultGroupSettings.Spacing > 0) {
+		c.DefaultGroupSettings.Spacing = 0
 	}
 
 	return c

@@ -35,16 +35,9 @@ func generateDashboard(ddata DashboardData) *dashboard.DashboardBuilder {
 		return builder
 	}
 
-	for _, row := range ddata.Rows {
-		if len(row.DatasourceUid) == 0 {
-			row.DatasourceUid = ddata.DatasourceUid
-		}
-		if len(row.Type) == 0 {
-			row.Type = ddata.Type
-		}
-		if ddata.Disabled {
-			row.Disabled = true
-		}
+	for _, row := range ddata.Rows { 
+		row.ItemSettings.inheritItemSettings(ddata.DefaultItemSettings)
+		row.GroupSettings.inheritGroupSettings(ddata.DefaultGroupSettings)
 		generateRow(builder, row, marginPos)
 	}
 	return builder
@@ -86,16 +79,11 @@ func generateRow(
 		dashboard.NewRowBuilder(row.Title).GridPos(*marginPos))
 
 	for _, column := range row.Columns {
-		if len(column.DatasourceUid) == 0 {
-			column.DatasourceUid = row.DatasourceUid
-		}
-		if len(column.Type) == 0 {
-			column.Type = row.Type
-		}
-		if row.Disabled {
-			column.Disabled = true
-		}
+		column.ItemSettings.inheritItemSettings(row.ItemSettings)
+		column.GroupSettings.inheritGroupSettings(row.GroupSettings)
+
 		generateRowColumn(builder, column, colRefPos, colMarginPos)
+
 		colRefPos.X = colMarginPos.X
 		marginPos.Y = max(marginPos.Y, colMarginPos.Y)
 		marginPos.X = colMarginPos.X
@@ -115,16 +103,11 @@ func generateRowColumn(
 	groupRefPos.X = colRefPos.X
 
 	for _, group := range column.Groups {
-		if len(group.DatasourceUid) == 0 {
-			group.DatasourceUid = column.DatasourceUid
-		}
-		if len(group.Type) == 0 {
-			group.Type = column.Type
-		}
-		if column.Disabled {
-			group.Disabled = true
-		}
+		group.ItemSettings.inheritItemSettings(column.ItemSettings)
+		group.Settings.inheritGroupSettings(column.GroupSettings)
+
 		generateRowColumnGroup(builder, group, groupRefPos, colMarginPos)
+
 		groupRefPos.Y = colMarginPos.Y
 	}
 }
@@ -136,22 +119,15 @@ func generateRowColumnGroup(
 	colMarginPos *dashboard.GridPos) {
 
 	gridPos := dashboard.NewGridPos()
-	gridPos.W = group.Width
-	gridPos.H = group.Height
+	gridPos.W = group.ItemSettings.Width
+	gridPos.H = group.ItemSettings.Height
 	colMarginPos.H = groupRefPos.H
-
 	for index, panel := range group.Items {
-		if len(panel.DatasourceUid) == 0 {
-			panel.DatasourceUid = group.DatasourceUid
-		}
-		if len(panel.Type) == 0 {
-			panel.Type = group.Type
-		}
-		if group.Disabled {
-			panel.Disabled = true
-		}
-		gridPos.Y = groupRefPos.Y + uint32(index)/group.Columns*group.Height
-		gridPos.X = groupRefPos.X + (uint32(index))%(group.Columns)*group.Width
+
+		panel.configureItemSettings(group.ItemSettings)
+
+		gridPos.Y = groupRefPos.Y + uint32(index)/group.Settings.Columns*group.ItemSettings.Height
+		gridPos.X = groupRefPos.X + (uint32(index))%(group.Settings.Columns)*group.ItemSettings.Width
 		switch panel.Type {
 		case "stat":
 			generateItemStatPanel(builder, panel, gridPos)
@@ -159,8 +135,8 @@ func generateRowColumnGroup(
 			generateItemTimeseriesPanel(builder, panel, gridPos)
 		}
 	}
-	colMarginPos.Y = max(colMarginPos.Y, groupRefPos.Y+uint32(len(group.Items)+1)/group.Columns*group.Height)
-	colMarginPos.X = max(colMarginPos.X, groupRefPos.X+min(group.Columns, uint32(len(group.Items)))*group.Width+group.Spacing)
+	colMarginPos.Y = max(colMarginPos.Y, groupRefPos.Y + uint32(len(group.Items) + 1)/group.Settings.Columns * group.ItemSettings.Height)
+	colMarginPos.X = max(colMarginPos.X, groupRefPos.X + min(group.Settings.Columns, uint32(len(group.Items))) * group.ItemSettings.Width + group.Settings.Spacing)
 }
 
 func generateItemStatPanel(
@@ -171,51 +147,22 @@ func generateItemStatPanel(
 	noDataColor := "grey"
 	disabledColor := "rgb(50,50,50)"
 
-	vmResultGreen := dashboard.ValueMappingResult{
-		Color: cog.ToPtr("green"),
-		Index: cog.ToPtr(int32(0)),
-	}
-	vmResultRed := dashboard.ValueMappingResult{
-		Color: cog.ToPtr("red"),
-		Index: cog.ToPtr(int32(1)),
-	}
-	vmResultYellow := dashboard.ValueMappingResult{
-		Color: cog.ToPtr("yellow"),
-		Index: cog.ToPtr(int32(2)),
-	}
+	var vMappings []dashboard.ValueMapping
 
-	rangeMapOptionNorm := dashboard.DashboardRangeMapOptions{
-		From:   cog.ToPtr(float64(1)),
-		Result: vmResultGreen,
-	}
-	rangeMapOptionWarn := dashboard.DashboardRangeMapOptions{
-		From:   cog.ToPtr(float64(0)),
-		To:     cog.ToPtr(float64(1)),
-		Result: vmResultYellow,
-	}
-	valueMapCrit := dashboard.ValueMap{
-		Type: "value",
-		Options: map[string]dashboard.ValueMappingResult{
-			"0": vmResultRed,
-		},
-	}
-	rangeMapNorm := dashboard.RangeMap{
-		Type:    "range",
-		Options: rangeMapOptionNorm,
-	}
-	rangeMapWarn := dashboard.RangeMap{
-		Type:    "range",
-		Options: rangeMapOptionWarn,
-	}
-
-	vMappingRangeNorm := dashboard.ValueMapping{
-		RangeMap: &rangeMapNorm,
-	}
-	vMappingRangeWarn := dashboard.ValueMapping{
-		RangeMap: &rangeMapWarn,
-	}
-	vMappingValuesCrit := dashboard.ValueMapping{
-		ValueMap: &valueMapCrit,
+	for index, r := range item.Ranges {
+		vMappings = append(vMappings, dashboard.ValueMapping{
+			RangeMap: &dashboard.RangeMap{
+				Type:    "range",
+				Options: dashboard.DashboardRangeMapOptions{
+					From:   cog.ToPtr(r.Min),
+					To:     cog.ToPtr(r.Max),
+					Result: dashboard.ValueMappingResult{
+						Color: cog.ToPtr(r.Color),
+						Index: cog.ToPtr(int32(index)),
+					},
+				},
+			},
+		})
 	}
 
 	panel := stat.NewPanelBuilder()
@@ -229,11 +176,7 @@ func generateItemStatPanel(
 		item.Link = ""
 
 	} else {
-		panel = panel.Mappings([]dashboard.ValueMapping{
-			vMappingRangeNorm,
-			vMappingRangeWarn,
-			vMappingValuesCrit,
-		})
+		panel = panel.Mappings(vMappings)
 	}
 
 	panel = panel.ColorScheme(dashboard.NewFieldColorBuilder().
@@ -261,8 +204,6 @@ func generateItemStatPanel(
 		TextMode("name").
 		ColorMode("background_solid").
 		GraphMode("none").
-		//Min(item.Min).
-		//Max(item.Max).
 		Datasource(
 			dashboard.DataSourceRef{
 				Type: cog.ToPtr("prometheus"),
@@ -305,8 +246,9 @@ func generateItemTimeseriesPanel(
 				Format(prometheus.PromQueryFormatTimeSeries).
 				LegendFormat(item.Title),
 		).
-		//Min(item.Min).
-		//Max(item.Max).
+		//TODO
+		//Min(0).
+		//Max(500).
 		Datasource(
 			dashboard.DataSourceRef{
 				Type: cog.ToPtr("prometheus"),
@@ -317,3 +259,60 @@ func generateItemTimeseriesPanel(
 
 	builder.WithPanel(panel)
 }
+
+func (s *ItemSettings) inheritItemSettings(parentSettings ItemSettings) *ItemSettings{
+	if len(s.Type) == 0 {
+		s.Type = parentSettings.Type
+	}
+	if parentSettings.Disabled {
+		s.Disabled = true
+	}
+	if len(s.Service) == 0 {
+		s.Service = parentSettings.Service
+	}
+	if len(s.DatasourceUid) == 0 {
+		s.DatasourceUid = parentSettings.DatasourceUid
+	}
+	if len(s.Ranges) == 0 {
+		s.Ranges = parentSettings.Ranges
+	}
+	if !(s.Width > 0) {
+		s.Width = parentSettings.Width
+	}
+	if !(s.Height > 0) {
+		s.Height = parentSettings.Height
+	}
+	return s
+}
+
+func (s *DataRowColumnGroupItem) configureItemSettings(parentSettings ItemSettings) *DataRowColumnGroupItem{
+	if len(s.Type) == 0 {
+		s.Type = parentSettings.Type
+	}
+	if parentSettings.Disabled {
+		s.Disabled = true
+	}
+	if len(s.Service) == 0 {
+		s.Service = parentSettings.Service
+	}
+	if len(s.DatasourceUid) == 0 {
+		s.DatasourceUid = parentSettings.DatasourceUid
+	}
+	if len(s.Ranges) == 0 {
+		s.Ranges = parentSettings.Ranges
+	}
+	return s
+}
+
+
+func (g *GroupSettings) inheritGroupSettings(parentSettings GroupSettings) *GroupSettings{
+	if !(g.Columns > 0) {
+		g.Columns = parentSettings.Columns
+	}
+	//TODO: rewrite spacing 0
+	if !(g.Spacing > 0) {
+		g.Spacing = parentSettings.Spacing
+	}
+	return g
+}
+
