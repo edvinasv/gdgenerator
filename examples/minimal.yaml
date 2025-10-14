@@ -1,0 +1,20 @@
+title: "Generic Dashboard Minimal settings"
+uid: "generic-dashboard-minimal"
+folderUid: "feulcvuviw8aof"
+
+#defaultItemSettings:
+#  datasourceUid: "feuwckb41cglca"
+
+rows:
+  - title: "Row1"
+    columns:
+      - title: "Column1"
+        groups:
+          - title: "Group1"
+            items:
+              - title: "Critical"
+                expr: 'vector(0)'
+              - title: "Warning"
+                expr: 'vector(0.5)'
+              - title: "OK"
+                expr: 'vector(1)'

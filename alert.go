@@ -1,24 +1,25 @@
 package main
 
+import (
+	"strconv"
+)
+
 func generateAlerts(ddata DashboardData) *AlertGroups {
 
 	alertGroups := new(AlertGroups)
 	alertGroup := new(AlertGroup)
 
-	if ddata.DryRun || ddata.Disabled || ddata.AlertingDisabled {
+	if ddata.DryRun { // || ddata.Disabled || ddata.AlertingDisabled {
 		return alertGroups
 	}
 
 	alertGroup.Name = ddata.Name
-
 	alertGroup.Interval = "1m"
 
 	for _, row := range ddata.Rows {
-		if row.Disabled || row.AlertingDisabled {
+		row.ItemSettings.inheritItemSettings(ddata.DefaultItemSettings)
+		if row.ItemSettings.Disabled || row.ItemSettings.AlertingDisabled {
 			continue
-		}
-		if len(row.Service) == 0 {
-			row.Service = ddata.Service
 		}
 		readRow(alertGroup, row)
 	}
@@ -31,11 +32,9 @@ func readRow(
 	row DataRow) {
 
 	for _, column := range row.Columns {
-		if column.Disabled || column.AlertingDisabled {
+		column.ItemSettings.inheritItemSettings(row.ItemSettings)
+		if column.ItemSettings.Disabled || column.ItemSettings.AlertingDisabled {
 			continue
-		}
-		if len(column.Service) == 0 {
-			column.Service = row.Service
 		}
 		readRowColumn(alertGroup, column)
 	}
@@ -46,11 +45,9 @@ func readRowColumn(
 	column DataRowColumn) {
 
 	for _, group := range column.Groups {
-		if group.Disabled || group.AlertingDisabled {
+		group.ItemSettings.inheritItemSettings(column.ItemSettings)
+		if group.ItemSettings.Disabled || group.ItemSettings.AlertingDisabled {
 			continue
-		}
-		if len(group.Service) == 0 {
-			group.Service = column.Service
 		}
 		readRowColumnGroup(alertGroup, group)
 	}
@@ -61,11 +58,9 @@ func readRowColumnGroup(
 	group DataRowColumnGroup) {
 
 	for _, panel := range group.Items {
+		panel.configureItemSettings(group.ItemSettings)
 		if panel.Disabled || panel.AlertingDisabled {
 			continue
-		}
-		if len(panel.Service) == 0 {
-			panel.Service = group.Service
 		}
 		generateAlert(alertGroup, panel)
 	}
@@ -74,28 +69,34 @@ func readRowColumnGroup(
 func generateAlert(
 	alertGroup *AlertGroup,
 	panel DataRowColumnGroupItem) {
+	for _, r := range panel.Ranges {
+		if len(r.Severity) == 0 ||
+			(panel.CriticalDisabled && r.Severity == "critical") ||
+			(panel.WarningDisabled && r.Severity == "warning") {
+			continue
+		}
+		alertGroup.Rules = append(alertGroup.Rules, renderAlert(panel, r))
+	}
+}
 
-	alertGroup.Rules = append(alertGroup.Rules, AlertRule{
-		Alert: panel.Title,
-		Expr:  "(" + panel.Expr + ") == 0",
-		//ForDuration: "0m",
-		//KeepFiringForDuration: "0m",
+func renderAlert(panel DataRowColumnGroupItem, r Range) AlertRule {
+	var expr string
+	if r.Min == r.Max {
+		expr = "(" + panel.Expr + ") == 0"
+	} else {
+		expr = "(" + panel.Expr + ") >= " +
+			strconv.FormatFloat(r.Min, 'f', -1, 64) +
+			" and (" + panel.Expr + ") <= " +
+			strconv.FormatFloat(r.Max, 'f', -1, 64)
+	}
+	return AlertRule{
+		Alert:       panel.Title,
+		Expr:        expr,
+		ForDuration: "5m",
 		Labels: AlertLabels{
-			Severity: "critical",
+			Severity: r.Severity,
 			Service:  panel.Service},
 		Annotations: AlertAnnotations{
-			Summary: panel.Title + " became critical"},
-	})
-
-	alertGroup.Rules = append(alertGroup.Rules, AlertRule{
-		Alert: panel.Title,
-		Expr:  "(" + panel.Expr + ") > 0 and (" + panel.Expr + ") < 1",
-		//ForDuration: "0m",
-		//KeepFiringForDuration: "0m",
-		Labels: AlertLabels{
-			Severity: "warning",
-			Service:  panel.Service},
-		Annotations: AlertAnnotations{
-			Summary: panel.Title + " became warning"},
-	})
+			Summary: panel.Title + " became " + r.Severity},
+	}
 }
