@@ -29,48 +29,52 @@ type GroupSettings struct {
 }
 
 type ItemSettings struct {
-	AlertingDisabled bool    `yaml:"alertingDisabled"`
 	Type             string  `yaml:"type"`
 	Disabled         bool    `yaml:"disabled"`
+	AlertingDisabled bool    `yaml:"alertingDisabled"`
+	CriticalDisabled bool    `yaml:"criticalDisabled"`
+	WarningDisabled  bool    `yaml:"warningDisabled"`
 	Service          string  `yaml:"service"`
 	DatasourceUid    string  `yaml:"datasourceUid"`
 	Ranges           []Range `yaml:"ranges"`
-	Width            uint32  `yaml:"width"`            
+	Width            uint32  `yaml:"width"`
 	Height           uint32  `yaml:"height"`
 }
 
 type DataRowColumnGroupItem struct {
-	Title          string   `yaml:"title"`
-	Descr          []string `yaml:"description"`
-	Expr           string   `yaml:"expr"`
-	Link           string   `yaml:"link"`
-	Type           string   `yaml:"type"`
-	Disabled       bool     `yaml:"disabled"`
-	Service        string   `yaml:"service"`
-	DatasourceUid  string   `yaml:"datasourceUid"`
-	Ranges         []Range  `yaml:"ranges"`
+	Title            string   `yaml:"title"`
+	Descr            []string `yaml:"description"`
+	Expr             string   `yaml:"expr"`
+	Link             string   `yaml:"link"`
+	Type             string   `yaml:"type"`
+	Disabled         bool     `yaml:"disabled"`
+	AlertingDisabled bool     `yaml:"alertingDisabled"`
+	CriticalDisabled bool     `yaml:"criticalDisabled"`
+	WarningDisabled  bool     `yaml:"warningDisabled"`
+	Service          string   `yaml:"service"`
+	DatasourceUid    string   `yaml:"datasourceUid"`
+	Ranges           []Range  `yaml:"ranges"`
 }
 
 type DataRowColumnGroup struct {
-	Title            string                   `yaml:"title"`
-	Items            []DataRowColumnGroupItem `yaml:"items"`
-	ItemSettings     ItemSettings             `yaml:"itemSettings"`
-	Settings         GroupSettings            `yaml:"settings"`
+	Title        string                   `yaml:"title"`
+	Items        []DataRowColumnGroupItem `yaml:"items"`
+	ItemSettings ItemSettings             `yaml:"itemSettings"`
+	Settings     GroupSettings            `yaml:"settings"`
 }
 
 type DataRowColumn struct {
-	Title            string               `yaml:"title"`
-	Groups           []DataRowColumnGroup `yaml:"groups"`
-	ItemSettings     ItemSettings         `yaml:"itemSettings"`
-	GroupSettings    GroupSettings        `yaml:"groupSettings"`
+	Title         string               `yaml:"title"`
+	Groups        []DataRowColumnGroup `yaml:"groups"`
+	ItemSettings  ItemSettings         `yaml:"itemSettings"`
+	GroupSettings GroupSettings        `yaml:"groupSettings"`
 }
 
 type DataRow struct {
-	Title            string          `yaml:"title"`
-	Columns          []DataRowColumn `yaml:"columns"`
-	ItemSettings     ItemSettings    `yaml:"itemSettings"`
-	GroupSettings    GroupSettings   `yaml:"groupSettings"`
-
+	Title         string          `yaml:"title"`
+	Columns       []DataRowColumn `yaml:"columns"`
+	ItemSettings  ItemSettings    `yaml:"itemSettings"`
+	GroupSettings GroupSettings   `yaml:"groupSettings"`
 }
 
 type DashboardData struct {
@@ -80,7 +84,7 @@ type DashboardData struct {
 	TimeRange            DashboardDataTimeRange `yaml:"timeRange"`
 	Refresh              string                 `yaml:"refresh"`
 	DefaultItemSettings  ItemSettings           `yaml:"defaultItemSettings"`
-	DefaultGroupSettings GroupSettings          `yaml:"defaultGroupSettings"`        
+	DefaultGroupSettings GroupSettings          `yaml:"defaultGroupSettings"`
 	Banner               string                 `yaml:"banner"`
 	DryRun               bool                   `yaml:"dryRun"`
 	Rows                 []DataRow              `yaml:"rows"`
@@ -189,20 +193,20 @@ func (c *DashboardData) loadDefaults() *DashboardData {
 	}
 	if len(c.DefaultItemSettings.Ranges) == 0 {
 		c.DefaultItemSettings.Ranges = []Range{{
-			Min: 1,
-			Max: 1,
+			Min:   1,
+			Max:   1,
 			Color: "green",
-			},{
-			Min: 0,
-			Max: 0,
-			Color: "red",
+		}, {
+			Min:      0,
+			Max:      0,
+			Color:    "red",
 			Severity: "critical",
-			},{
-			Min: 0,
-			Max: 1,
-			Color: "yellow",
+		}, {
+			Min:      0,
+			Max:      1,
+			Color:    "yellow",
 			Severity: "warning",
-			},
+		},
 		}
 	}
 	if !(c.DefaultGroupSettings.Columns > 0) {
@@ -211,7 +215,6 @@ func (c *DashboardData) loadDefaults() *DashboardData {
 	if !(c.DefaultGroupSettings.Spacing > 0) {
 		c.DefaultGroupSettings.Spacing = 0
 	}
-
 	return c
 }
 

@@ -35,7 +35,7 @@ func generateDashboard(ddata DashboardData) *dashboard.DashboardBuilder {
 		return builder
 	}
 
-	for _, row := range ddata.Rows { 
+	for _, row := range ddata.Rows {
 		row.ItemSettings.inheritItemSettings(ddata.DefaultItemSettings)
 		row.GroupSettings.inheritGroupSettings(ddata.DefaultGroupSettings)
 		generateRow(builder, row, marginPos)
@@ -135,8 +135,8 @@ func generateRowColumnGroup(
 			generateItemTimeseriesPanel(builder, panel, gridPos)
 		}
 	}
-	colMarginPos.Y = max(colMarginPos.Y, groupRefPos.Y + uint32(len(group.Items) + 1)/group.Settings.Columns * group.ItemSettings.Height)
-	colMarginPos.X = max(colMarginPos.X, groupRefPos.X + min(group.Settings.Columns, uint32(len(group.Items))) * group.ItemSettings.Width + group.Settings.Spacing)
+	colMarginPos.Y = max(colMarginPos.Y, groupRefPos.Y+uint32(len(group.Items)+1)/group.Settings.Columns*group.ItemSettings.Height)
+	colMarginPos.X = max(colMarginPos.X, groupRefPos.X+min(group.Settings.Columns, uint32(len(group.Items)))*group.ItemSettings.Width+group.Settings.Spacing)
 }
 
 func generateItemStatPanel(
@@ -152,10 +152,10 @@ func generateItemStatPanel(
 	for index, r := range item.Ranges {
 		vMappings = append(vMappings, dashboard.ValueMapping{
 			RangeMap: &dashboard.RangeMap{
-				Type:    "range",
+				Type: "range",
 				Options: dashboard.DashboardRangeMapOptions{
-					From:   cog.ToPtr(r.Min),
-					To:     cog.ToPtr(r.Max),
+					From: cog.ToPtr(r.Min),
+					To:   cog.ToPtr(r.Max),
 					Result: dashboard.ValueMappingResult{
 						Color: cog.ToPtr(r.Color),
 						Index: cog.ToPtr(int32(index)),
@@ -259,60 +259,3 @@ func generateItemTimeseriesPanel(
 
 	builder.WithPanel(panel)
 }
-
-func (s *ItemSettings) inheritItemSettings(parentSettings ItemSettings) *ItemSettings{
-	if len(s.Type) == 0 {
-		s.Type = parentSettings.Type
-	}
-	if parentSettings.Disabled {
-		s.Disabled = true
-	}
-	if len(s.Service) == 0 {
-		s.Service = parentSettings.Service
-	}
-	if len(s.DatasourceUid) == 0 {
-		s.DatasourceUid = parentSettings.DatasourceUid
-	}
-	if len(s.Ranges) == 0 {
-		s.Ranges = parentSettings.Ranges
-	}
-	if !(s.Width > 0) {
-		s.Width = parentSettings.Width
-	}
-	if !(s.Height > 0) {
-		s.Height = parentSettings.Height
-	}
-	return s
-}
-
-func (s *DataRowColumnGroupItem) configureItemSettings(parentSettings ItemSettings) *DataRowColumnGroupItem{
-	if len(s.Type) == 0 {
-		s.Type = parentSettings.Type
-	}
-	if parentSettings.Disabled {
-		s.Disabled = true
-	}
-	if len(s.Service) == 0 {
-		s.Service = parentSettings.Service
-	}
-	if len(s.DatasourceUid) == 0 {
-		s.DatasourceUid = parentSettings.DatasourceUid
-	}
-	if len(s.Ranges) == 0 {
-		s.Ranges = parentSettings.Ranges
-	}
-	return s
-}
-
-
-func (g *GroupSettings) inheritGroupSettings(parentSettings GroupSettings) *GroupSettings{
-	if !(g.Columns > 0) {
-		g.Columns = parentSettings.Columns
-	}
-	//TODO: rewrite spacing 0
-	if !(g.Spacing > 0) {
-		g.Spacing = parentSettings.Spacing
-	}
-	return g
-}
-

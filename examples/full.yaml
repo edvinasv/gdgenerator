@@ -19,9 +19,11 @@ banner: >
 defaultItemSettings:
   datasourceUid: "feuwckb41cglca"
   type: "timeseries"       # default "stat"
-  #disabled: true          # default false
-  alertingDisabled: true   # default false
-  service: "service1"      # default unset
+#  disabled: true          # default false
+#  alertingDisabled: true   # default false
+#  criticalDisabled: true   # default false
+#  warningDisabled: true    # default false
+  service: "service2"      # default unset
   width: 16                # default 2
   height: 11               # default 1
   ranges:
