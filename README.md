@@ -11,10 +11,10 @@ go build .
 ## Running
 
 ```shell
-./gdgenerator -config ./examples/generic.yaml --manifests-directory ./dashboard-resources --manifests
+./gdgenerator -config ./examples/full.yaml --manifests-directory ./dashboard-resources --manifests
 grafanactl resources push --path ./dashboard-resources/generic-dashboard.json
 
-./gdgenerator -config ./examples/generic.yaml --alerts-directory ./dashboard-alerts --alerts
+./gdgenerator -config ./examples/full.yaml --alerts-directory ./dashboard-alerts --alerts
 ```
 
 ## More Information
