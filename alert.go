@@ -82,12 +82,19 @@ func generateAlert(
 func renderAlert(panel DataRowColumnGroupItem, r Range) AlertRule {
 	var expr string
 	if r.Min == r.Max {
-		expr = "(" + panel.Expr + ") == 0"
+		expr = "(" + panel.Expr + ") == " + strconv.FormatFloat(r.Min, 'f', -1, 64)
 	} else {
-		expr = "(" + panel.Expr + ") >= " +
-			strconv.FormatFloat(r.Min, 'f', -1, 64) +
-			" and (" + panel.Expr + ") <= " +
-			strconv.FormatFloat(r.Max, 'f', -1, 64)
+		if r.Inclusive {
+			expr = "(" + panel.Expr + ") >= " +
+				strconv.FormatFloat(r.Min, 'f', -1, 64) +
+				" and (" + panel.Expr + ") <= " +
+				strconv.FormatFloat(r.Max, 'f', -1, 64)
+		} else {
+			expr = "(" + panel.Expr + ") > " +
+				strconv.FormatFloat(r.Min, 'f', -1, 64) +
+				" and (" + panel.Expr + ") < " +
+				strconv.FormatFloat(r.Max, 'f', -1, 64)
+		}
 	}
 	return AlertRule{
 		Alert:       panel.Title,

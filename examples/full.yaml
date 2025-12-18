@@ -27,12 +27,13 @@ defaultItemSettings:
   width: 16                # default 2
   height: 11               # default 1
   ranges:
-    - min: 200             # default 1.0
+    - min: 200             # default 0.0
       max: 299             # default 1.0
+      inclusive: true      # default false (min:max), [min:max] if true
       color: "green"       # default "green"
       #severity: ""        # 
     - min: 100             # default 0.0
-      max: 399             # default 0.0
+      max: 399             # default 1.0
       color: "blue"        # default "red"     
       #severity: ""        # default "critical"
     - min: 400             # default 0.0

@@ -17,10 +17,11 @@ type DashboardDataTimeRange struct {
 }
 
 type Range struct {
-	Min      float64 `yaml:"min"`
-	Max      float64 `yaml:"max"`
-	Color    string  `yaml:"color"`
-	Severity string  `yaml:"severity"`
+	Min       float64 `yaml:"min"`
+	Max       float64 `yaml:"max"`
+	Inclusive bool    `yaml:"inclusive"`
+	Color     string  `yaml:"color"`
+	Severity  string  `yaml:"severity"`
 }
 
 type GroupSettings struct {
@@ -193,19 +194,22 @@ func (c *DashboardData) loadDefaults() *DashboardData {
 	}
 	if len(c.DefaultItemSettings.Ranges) == 0 {
 		c.DefaultItemSettings.Ranges = []Range{{
-			Min:   1,
-			Max:   1,
-			Color: "green",
+			Min:       1,
+			Max:       1,
+			Inclusive: false,
+			Color:     "green",
 		}, {
-			Min:      0,
-			Max:      0,
-			Color:    "red",
-			Severity: "critical",
+			Min:       0,
+			Max:       0,
+			Inclusive: false,
+			Color:     "red",
+			Severity:  "critical",
 		}, {
-			Min:      0,
-			Max:      1,
-			Color:    "yellow",
-			Severity: "warning",
+			Min:       0,
+			Max:       1,
+			Inclusive: false,
+			Color:     "yellow",
+			Severity:  "warning",
 		},
 		}
 	}
